@@ -10,6 +10,7 @@ sourceSets {
     compat {
         java.srcDirs = [new File(addonRoot, 'src/main/java')]
         resources.srcDirs = [new File(addonRoot, 'src/main/resources')]
+        output.resourcesDir = new File(addonBuild, 'resources/main')
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
     }

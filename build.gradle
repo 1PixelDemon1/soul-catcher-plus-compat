@@ -15,7 +15,8 @@ if (!new File(coreRoot, 'build.gradle').isFile()) {
 }
 
 def coreCommand = { List<String> coreTasks ->
-    def arguments = coreTasks + ["-PcompatAddonDir=${projectDir.absolutePath}"]
+    def arguments = coreTasks + ["-PcompatAddonDir=${projectDir.absolutePath}",
+                                '--gradle-user-home', gradle.gradleUserHomeDir.absolutePath]
     if (gradle.startParameter.offline) arguments += '--offline'
     ['gameTests', 'withTwilightForest', 'withAquamirae', 'withMowzies'].each { flag ->
         if (project.hasProperty(flag)) arguments += "-P${flag}"
