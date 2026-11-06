@@ -1,43 +1,143 @@
-plugins { id 'base' }
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
 
 version = mod_version
 group = 'dev.soulcatcherplus'
+base { archivesName = 'soulcatcherplus-compat' }
 layout.buildDirectory = layout.projectDirectory.dir("build/${minecraft_version}")
-
-// Compile against the matching local core, using its Forge mappings and public API.
-// The core applies this repository's core-integration.gradle and packages only addon output.
-def workspaceRoot = file('../../gradle.properties').isFile() ? file('../../..') : file('..')
-def defaultCore = new File(workspaceRoot, 'SoulCatcherPlus')
-if (minecraft_version != '1.16.5') defaultCore = new File(defaultCore, ".worktrees/forge-${minecraft_version}")
-def coreRoot = file(providers.gradleProperty('coreDir').getOrElse(defaultCore.path))
-if (!new File(coreRoot, 'build.gradle').isFile()) {
-    throw new GradleException('Check out the matching Soul Catcher Plus branch next to this repository, or set -PcoreDir=<path>.')
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
 }
 
-def coreCommand = { List<String> coreTasks ->
-    def arguments = coreTasks + ["-PcompatAddonDir=${projectDir.absolutePath}",
-                                '--gradle-user-home', gradle.gradleUserHomeDir.absolutePath]
-    if (gradle.startParameter.offline) arguments += '--offline'
-    ['gameTests', 'withTwilightForest', 'withAquamirae', 'withMowzies'].each { flag ->
-        if (project.hasProperty(flag)) arguments += "-P${flag}"
-    }
-    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
-        return ['powershell.exe', '-NoProfile', '-File', new File(coreRoot, 'scripts/gradle.ps1').path] + arguments
-    }
-    return ['sh', new File(coreRoot, 'gradlew').path] + arguments
+def localSettings = new Properties()
+def localSettingsFile = file('local.properties')
+if (localSettingsFile.isFile()) localSettingsFile.withReader('UTF-8') { localSettings.load(it) }
+def corePath = providers.gradleProperty('soulcatcherplusJar').getOrElse(localSettings.getProperty('soulcatcherplusJar', ''))
+if (!corePath.trim()) {
+    throw new GradleException('Set soulcatcherplusJar in local.properties (see local.properties.example), or pass -PsoulcatcherplusJar=<path>.')
 }
-tasks.register('buildAddon', Exec) {
+def coreJar = file(corePath)
+if (!coreJar.isFile() || !coreJar.name.toLowerCase().endsWith('.jar')) {
+    throw new GradleException("Soul Catcher Plus JAR not found: ${coreJar}. Use an installable JAR, not a sources/dev JAR.")
+}
+
+// Check the actual mod metadata, independently of the selected filename.
+new java.util.jar.JarFile(coreJar).withCloseable { archive ->
+    def entry = archive.getJarEntry('META-INF/mods.toml')
+    if (entry == null) throw new GradleException('The selected JAR has no Forge mod metadata.')
+    def metadata = archive.getInputStream(entry).withCloseable { it.getText('UTF-8') }
+    def coreModVersion = null
+    def modTables = metadata =~ /(?ms)^\s*\[\[mods\]\]\s*(.*?)(?=^\s*\[\[|\z)/
+    modTables.each { table ->
+        if (table[1] =~ /(?m)^\s*modId\s*=\s*["']soulcatcherplus["']/) {
+            def versionField = table[1] =~ /(?m)^\s*version\s*=\s*["']([^"']+)["']/
+            if (versionField.find()) coreModVersion = versionField.group(1)
+        }
+    }
+    if (coreModVersion == '${file.jarVersion}') coreModVersion = archive.manifest?.mainAttributes?.getValue('Implementation-Version')
+    if (coreModVersion != core_version) {
+        throw new GradleException("Expected Soul Catcher Plus ${core_version} for Minecraft ${minecraft_version}; selected JAR declares ${coreModVersion ?: 'no soulcatcherplus mod'}.")
+    }
+}
+
+// A content-based dependency version invalidates ForgeGradle's remap cache when
+// a locally rebuilt JAR replaces an older file with the same name and mod version.
+def coreDigest = java.security.MessageDigest.getInstance('SHA-256')
+coreJar.withInputStream { stream ->
+    byte[] buffer = new byte[65536]
+    int count
+    while ((count = stream.read(buffer)) != -1) coreDigest.update(buffer, 0, count)
+}
+def coreHash = coreDigest.digest().encodeHex().toString()
+def coreArtifact = coreJar.name.substring(0, coreJar.name.length() - 4)
+def coreDependency = "local.soulcatcherplus:${coreArtifact}:${coreHash}"
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file("run/${minecraft_version}")
+            property 'forge.logging.console.level', 'info'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${layout.buildDirectory.get().asFile}/createSrgToMcp/output.srg"
+            args '--mixin', 'soulcatcherplus_compat.mixins.json'
+            mods { soulcatcherplus_compat { source sourceSets.main } }
+        }
+        client { workingDirectory project.file("run-client/${minecraft_version}") }
+        server { args '--nogui' }
+    }
+}
+repositories {
+    flatDir {
+        dirs coreJar.parentFile
+        content { includeGroup 'local.soulcatcherplus' }
+    }
+    maven { url = 'https://libraries.minecraft.net' }
+    mavenCentral()
+    maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
+    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
+}
+configurations { playtestMods { transitive = false } }
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    implementation fg.deobf(coreDependency)
+    if (minecraft_version == '1.16.5') {
+        annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+        compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
+        if (project.hasProperty('withTwilightForest')) {
+            runtimeOnly fg.deobf('curse.maven:the-twilight-forest-227639:3575220')
+            playtestMods 'curse.maven:the-twilight-forest-227639:3575220'
+        }
+        if (project.hasProperty('withAquamirae')) {
+            ['maven.modrinth:8BmcQJ2H:UQGoJDhn', 'curse.maven:aquamirae-536254:4420334', 'curse.maven:obscure-api-638417:4420298'].each { mod ->
+                runtimeOnly fg.deobf(mod)
+                playtestMods mod
+            }
+        }
+    } else {
+        if (project.hasProperty('withTwilightForest')) {
+            def twilight = minecraft_version == '1.19.2' ? '4389567' : '5468648'
+            runtimeOnly fg.deobf("curse.maven:the-twilight-forest-227639:${twilight}")
+            playtestMods "curse.maven:the-twilight-forest-227639:${twilight}"
+        }
+        if (project.hasProperty('withMowzies')) {
+            def mowzie = minecraft_version == '1.19.2' ? '5180680' : '7815705'
+            def gecko = minecraft_version == '1.19.2' ? '4407241' : '7553267'
+            runtimeOnly fg.deobf("curse.maven:mowzies-mobs-250498:${mowzie}")
+            runtimeOnly fg.deobf("curse.maven:geckolib-388172:${gecko}")
+            playtestMods "curse.maven:mowzies-mobs-250498:${mowzie}"
+            playtestMods "curse.maven:geckolib-388172:${gecko}"
+        }
+    }
+}
+tasks.named('processResources', ProcessResources).configure {
+    inputs.properties(mod_version: mod_version, core_version: core_version)
+    filesMatching('META-INF/mods.toml') { expand mod_version: mod_version, core_version: core_version }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = minecraft_version == '1.16.5' ? 8 : 17
+}
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(minecraft_version == '1.16.5' ? 8 : 17)
+    }
+}
+tasks.named('jar', Jar).configure {
+    manifest { attributes 'Implementation-Version': mod_version, 'MixinConfigs': 'soulcatcherplus_compat.mixins.json' }
+    finalizedBy 'reobfJar'
+}
+tasks.register('playtestZip', Zip) {
     group = 'build'
-    description = 'Builds and reobfuscates the addon against the matching local core.'
-    workingDir coreRoot
-    commandLine coreCommand(['compatJar'])
-}
-tasks.named('assemble').configure { dependsOn 'buildAddon' }
-['runClient', 'runServer', 'playtestZip'].each { taskName ->
-    tasks.register(taskName, Exec) {
-        group = 'development'
-        description = "Runs the matching core's ${taskName} with this external addon."
-        workingDir coreRoot
-        commandLine coreCommand([taskName])
-    }
+    description = 'Packages the addon, configured original core JAR and selected playtest dependencies.'
+    dependsOn 'reobfJar'
+    archiveFileName = "soulcatcherplus-compat-${minecraft_version}-playtest.zip"
+    destinationDirectory = layout.buildDirectory.dir('playtest')
+    from(tasks.named('jar')) { into 'mods' }
+    from(coreJar) { into 'mods' }
+    from(configurations.playtestMods) { into 'mods' }
 }

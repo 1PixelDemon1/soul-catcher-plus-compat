@@ -1,0 +1,4 @@
+# Copy this file to local.properties and set the path to an installable core JAR.
+# Use forward slashes on Windows. Relative paths resolve from this project directory.
+# Do not use a sources JAR, a dev JAR or the compatibility addon JAR.
+soulcatcherplusJar=C:/Minecraft/mods/soulcatcherplus-1.0.0+1.20.1.jar
