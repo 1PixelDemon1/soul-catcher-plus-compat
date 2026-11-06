@@ -1,50 +1,63 @@
 # Soul Catcher Plus Compat
 
-Optional mod integrations for [Soul Catcher Plus](https://github.com/1PixelDemon1/soul-catcher-plus).
-Includes Mowzie's Mobs adapters and ally filtering, Twilight Forest summon ownership
-hooks, and Aquamirae companion music suppression. Creature mods and their libraries
-are optional and installed separately; support depends on their version and behavior.
-Generic capture, AI, ownership and rendering remain in the core mod.
+Optional integrations for [Soul Catcher Plus](https://github.com/1PixelDemon1/soul-catcher-plus):
+Mowzie's Mobs adapters/ally filtering, Twilight Forest summon ownership and Aquamirae
+companion music suppression. Creature mods and their libraries are optional and
+installed separately. Support depends on their versions and behavior.
 
-This branch targets **Minecraft 1.16.5 / Forge**. Install the addon and the exact
-matching core JAR on client and server. The addon bundles no core or third-party classes.
-Registry IDs, profiles and saved collection data are unchanged by the repository move.
+| Branch | Target | Runtime Java |
+| --- | --- | --- |
+| `main`, `develop` | Forge 1.16.5 | 8 |
+| `forge/1.19.2` | Forge 1.19.2 | 17 |
+| `forge/1.20.1` | Forge 1.20.1 | 17 |
 
-| Branch | Target |
-| --- | --- |
-| `main`, `develop` | Forge 1.16.5; Java 8 runtime, Java 17/Jabel build |
-| `forge/1.19.2` | Forge 1.19.2; Java 17 |
-| `forge/1.20.1` | Forge 1.20.1; Java 17 |
+This branch targets **Minecraft 1.16.5 / Forge 36.2.42**. Install separate addon
+and core JARs on client and server. The required core version is **1.0.0+1.16.5**.
+The addon never bundles the core or third-party mods.
 
-## Local development
+## Development setup
 
-Keep this repository next to the `SoulCatcherPlus` core checkout. Version-specific
-ports use the matching core worktree at `SoulCatcherPlus/.worktrees/forge-<version>`.
-Use the matching branch in both projects. The core supplies its Forge build and public
-API; all addon sources and integration build wiring are owned here.
+This is a standalone ForgeGradle project. **No SoulCatcherPlus source checkout or
+particular folder layout is required.**
 
-```powershell
-.\scripts\gradle.ps1 build --offline
-# 1.16.5 manual development client:
-.\scripts\gradle.ps1 runClient --offline -PgameTests -PwithTwilightForest -PwithAquamirae
+1. Install Java 17 for Gradle and compilation. 1.16.5 also needs Java 8 for the game.
+   `python scripts/bootstrap.py` can install the required JDKs inside this repository.
+2. Download an installable core JAR matching this branch (not a sources/dev JAR).
+3. Copy `local.properties.example` to `local.properties` and set its path:
+
+```properties
+soulcatcherplusJar=C:/Minecraft/mods/soulcatcherplus-1.0.0+1.16.5.jar
 ```
 
-Set `JAVA_HOME` to Java 17 or bootstrap the adjacent core with `python scripts/bootstrap.py`.
-Omit `--offline` when dependencies have not been downloaded. For another core location,
-pass `-PcoreDir=<path>` (and configure `JAVA_HOME` as needed).
+Use forward slashes on Windows. Absolute and project-relative paths are accepted.
+`local.properties` is ignored by Git. Alternatively pass `-PsoulcatcherplusJar=<path>`
+or set the property in your user Gradle settings. The build checks the core mod ID
+and exact version from the JAR metadata. Copying/rebuilding a JAR at the same path
+changes the dependency content hash and invalidates the deobfuscation cache.
 
-`build.gradle` delegates to the matching core build, which applies `core-integration.gradle`.
-The addon compiles against core output and packages only addon classes/resources.
-Output: `build/1.16.5/libs/soulcatcherplus-compat-1.0.0+1.16.5.jar`.
-The core's `build`, `compatJar`, `runClient` and (1.16.5) `playtestZip` also use this
-external checkout when available. `-PwithoutCompatAddon` or an absent addon checkout
-leaves the core independent. Core release builds and historical tags are unchanged.
+```powershell
+.\scripts\gradle.ps1 build -x test
+# 1.16.5 test profile (other mods are optional):
+.\scripts\gradle.ps1 runClient -PwithTwilightForest -PwithAquamirae
+```
 
-Do not run simultaneous builds of the same core/addon checkout. Keep game worlds
-separate for each Minecraft version. See the core's [public API](https://github.com/1PixelDemon1/soul-catcher-plus/blob/develop/docs/API.md)
-for extension points; individual integrations must not register duplicate adapters.
+Use `--offline` once dependencies are cached. The script uses JAVA_HOME or local
+`.tools` JDKs; set SOULCATCHER_GAME_JAVA to a Java 8 home if using externally installed
+tooling for 1.16.5. GRADLE_USER_HOME can select another cache, but is optional.
+
+Outputs: `build/1.16.5/libs/soulcatcherplus-compat-1.0.0+1.16.5.jar`.
+`runClient` loads the configured core JAR and addon sources; `runServer` is available
+for manual server checks. A normal core release JAR does not contain the QA command.
+`playtestZip` packages the original core JAR, addon JAR and selected original dependencies.
+Game worlds live inside this project's version-specific run directories. Existing
+core-project worlds remain in their original folders.
+
+The core dependency uses [ForgeGradle's local mod dependency mechanism](https://docs.minecraftforge.net/en/fg-6.x/dependencies/).
+Changes to core source require manually rebuilding and selecting a new core JAR;
+the addon does not invoke or rebuild another project. The core can likewise load
+a built addon using its optional `compatAddonJar` local setting.
 
 ## History and license
 
-The original `addons/compat` commit history is preserved with paths rooted here.
-This extraction creates no release or release tags. [MIT](LICENSE).
+Original addon history is preserved. No new release or tags are created by this
+build change. Public extension APIs are documented in the core repository. [MIT](LICENSE).

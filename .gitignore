@@ -11,3 +11,5 @@ run-client/
 logs/
 __pycache__/
 *.py[cod]
+
+local.properties

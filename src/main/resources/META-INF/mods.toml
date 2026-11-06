@@ -21,7 +21,7 @@ side="BOTH"
 [[dependencies.soulcatcherplus_compat]]
 modId="soulcatcherplus"
 mandatory=true
-versionRange="[${mod_version}]"
+versionRange="[${core_version}]"
 ordering="AFTER"
 side="BOTH"
 [[dependencies.soulcatcherplus_compat]]
