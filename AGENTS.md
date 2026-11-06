@@ -1,23 +1,32 @@
 # Soul Catcher Plus Compat
 
-The addon owns all mod-specific adapters, mixins, profiles, metadata and integration
-build wiring. Generic ownership, summoning and extension APIs belong to the core.
-All creature-mod hooks must remain optional. Never bundle core or third-party classes.
+Standalone ForgeGradle project. All mod-specific adapters, mixins, profiles and metadata
+belong here; generic ownership, summoning and extension APIs belong to the core mod.
+Creature mods remain optional. Never bundle core or third-party classes in the addon.
 
 `develop` targets Forge 1.16.5 (36.2.42), Java 8 runtime / Java 17 + Jabel compiler.
-`forge/1.19.2` and `forge/1.20.1` target their matching core branches, Java 17.
-`main` is the public baseline. Do not create releases, tags or push without a request.
-Keep historical release tags in the original repository unchanged.
+`forge/1.19.2` and `forge/1.20.1` target their matching Forge versions, Java 17.
+`main` is the public baseline. Keep Git operations local; no push, tags or releases
+without an explicit user request. Do not rewrite history or existing release tags.
 
-The adjacent `SoulCatcherPlus` checkout supplies the public API, Forge build and
-development environment. `core-integration.gradle` is applied there; this repository's
-`build.gradle` delegates tasks to that matching checkout. Use `-PcoreDir=<path>` from
-this repository, or `-PcompatAddonDir=<path>` from the core, for another local layout.
-The core must match `minecraft_version` and `mod_version` in this repository.
+The core is an installable JAR dependency, never an adjacent source checkout.
+Configure `soulcatcherplusJar` in ignored `local.properties`, following
+`local.properties.example`, or pass `-PsoulcatcherplusJar=<path>`.
+The JAR must declare the expected `core_version`; use the matching Minecraft build.
+ForgeGradle deobfuscates it for compilation and the development runtime. Its content
+SHA identifies the dependency so replacing the same filename refreshes the remap cache.
+Changing core sources does not update this JAR automatically.
 
-Build: `.\scripts\gradle.ps1 build --offline` (no automated tests).
+Use the installed minecraft-modding skill for mod code, matching the actual port APIs.
+Build: `.\scripts\gradle.ps1 build -x test --offline`.
+Client16: `.\scripts\gradle.ps1 runClient --offline -PwithTwilightForest -PwithAquamirae`.
+QA commands exist only if the chosen core JAR provides them; normal release JARs do not.
+Java tooling may be installed with `python scripts/bootstrap.py`. No core repository
+or shared Gradle cache is required. Explicit JAVA_HOME/GRADLE_USER_HOME settings are honored.
 Outputs: `build/<minecraft_version>/libs/soulcatcherplus-compat-<mod_version>.jar`.
-1.16.5 manual client: `.\scripts\gradle.ps1 runClient --offline -PgameTests -PwithTwilightForest -PwithAquamirae`.
-Do not force-close a running client or run automated tests/GameTests/UI without a request.
-After substantive code changes request a read-only review from `code_quality_reviewer`.
-Keep caches, tools, builds and local worlds ignored. Do not commit dependency JARs.
+
+Request a read-only `code_quality_reviewer` review after substantive code changes.
+Compile and launch the current development client for manual checks; confirm startup
+from logs. Never force-close a running client or discard worlds. Automated tests,
+GameTests and game UI automation require a separate request. Keep paths, dependencies,
+caches, tools, build outputs and local worlds ignored. Do not commit local.properties.
