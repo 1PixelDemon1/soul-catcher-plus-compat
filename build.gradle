@@ -1,0 +1,42 @@
+plugins { id 'base' }
+
+version = mod_version
+group = 'dev.soulcatcherplus'
+layout.buildDirectory = layout.projectDirectory.dir("build/${minecraft_version}")
+
+// Compile against the matching local core, using its Forge mappings and public API.
+// The core applies this repository's core-integration.gradle and packages only addon output.
+def workspaceRoot = file('../../gradle.properties').isFile() ? file('../../..') : file('..')
+def defaultCore = new File(workspaceRoot, 'SoulCatcherPlus')
+if (minecraft_version != '1.16.5') defaultCore = new File(defaultCore, ".worktrees/forge-${minecraft_version}")
+def coreRoot = file(providers.gradleProperty('coreDir').getOrElse(defaultCore.path))
+if (!new File(coreRoot, 'build.gradle').isFile()) {
+    throw new GradleException('Check out the matching Soul Catcher Plus branch next to this repository, or set -PcoreDir=<path>.')
+}
+
+def coreCommand = { List<String> coreTasks ->
+    def arguments = coreTasks + ["-PcompatAddonDir=${projectDir.absolutePath}"]
+    if (gradle.startParameter.offline) arguments += '--offline'
+    ['gameTests', 'withTwilightForest', 'withAquamirae', 'withMowzies'].each { flag ->
+        if (project.hasProperty(flag)) arguments += "-P${flag}"
+    }
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        return ['powershell.exe', '-NoProfile', '-File', new File(coreRoot, 'scripts/gradle.ps1').path] + arguments
+    }
+    return ['sh', new File(coreRoot, 'gradlew').path] + arguments
+}
+tasks.register('buildAddon', Exec) {
+    group = 'build'
+    description = 'Builds and reobfuscates the addon against the matching local core.'
+    workingDir coreRoot
+    commandLine coreCommand(['compatJar'])
+}
+tasks.named('assemble').configure { dependsOn 'buildAddon' }
+['runClient', 'runServer', 'playtestZip'].each { taskName ->
+    tasks.register(taskName, Exec) {
+        group = 'development'
+        description = "Runs the matching core's ${taskName} with this external addon."
+        workingDir coreRoot
+        commandLine coreCommand([taskName])
+    }
+}

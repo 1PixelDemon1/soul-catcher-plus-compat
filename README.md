@@ -1,61 +1,50 @@
-# Soul Catcher Plus: Mod Integrations
+# Soul Catcher Plus Compat
 
-Combined integration addon. This source tree targets Minecraft **1.16.5 / Forge 36.2.42**.
-The 1.0.0 release also has a separate **1.20.1 / Forge 47.4.28 / Java 17**
-build on `forge/1.20.1`; see [release notes](../../docs/releases/1.0.0.md).
-Use only the core/addon pair matching your Minecraft version.
-Mod ID: `soulcatcherplus_compat`. Java 8 runtime; built with the same Java 17/Jabel
-toolchain as the core. This is a separate installable JAR, not a nested dependency.
+Optional mod integrations for [Soul Catcher Plus](https://github.com/1PixelDemon1/soul-catcher-plus).
+Includes Mowzie's Mobs adapters and ally filtering, Twilight Forest summon ownership
+hooks, and Aquamirae companion music suppression. Creature mods and their libraries
+are optional and installed separately; support depends on their version and behavior.
+Generic capture, AI, ownership and rendering remain in the core mod.
 
-The addon currently contains:
+This branch targets **Minecraft 1.16.5 / Forge**. Install the addon and the exact
+matching core JAR on client and server. The addon bundles no core or third-party classes.
+Registry IDs, profiles and saved collection data are unchanged by the repository move.
 
-- Mowzie's Mobs 1.5.27: Wroughtnaut activation/appearance adapter, area-attack ally
-  filtering and its soul profile.
-- Twilight Forest 4.0.870: Snow Queen ice-crystal spawn attribution and native
-  master links for Lich clones and Lich minions.
-- Aquamirae 5.4.0: the client hook preserving the regular Cornelia music cooldown
-  when its source is a summoned companion.
+| Branch | Target |
+| --- | --- |
+| `main`, `develop` | Forge 1.16.5; Java 8 runtime, Java 17/Jabel build |
+| `forge/1.19.2` | Forge 1.19.2; Java 17 |
+| `forge/1.20.1` | Forge 1.20.1; Java 17 |
 
-All creature mods are optional. Adapters register only when their mod is loaded;
-optional `@Pseudo` mixins are skipped if their target classes are absent.
-No third-party mod classes or assets are bundled.
+## Local development
 
-The core retains generic capture/summoning, AI commands, ownership inheritance,
-boss-bar suppression, spectral rendering, music source tracking and the public
-extension APIs. Without this addon, these generic features still work, but the
-specific corrections listed above are absent. Existing collection IDs, ownership
-tags and data-profile paths are unchanged. Removing an addon may therefore affect
-the behavior of its supported creatures, without deleting their saved souls.
-
-## Build and install
-
-From the repository root:
+Keep this repository next to the `SoulCatcherPlus` core checkout. Version-specific
+ports use the matching core worktree at `SoulCatcherPlus/.worktrees/forge-<version>`.
+Use the matching branch in both projects. The core supplies its Forge build and public
+API; all addon sources and integration build wiring are owned here.
 
 ```powershell
-.\scripts\gradle.ps1 build -x test
-.\scripts\gradle.ps1 playtestZip -PwithTwilightForest -PwithAquamirae
+.\scripts\gradle.ps1 build --offline
+# 1.16.5 manual development client:
+.\scripts\gradle.ps1 runClient --offline -PgameTests -PwithTwilightForest -PwithAquamirae
 ```
 
-Outputs under `build/1.16.5/libs`:
+Set `JAVA_HOME` to Java 17 or bootstrap the adjacent core with `python scripts/bootstrap.py`.
+Omit `--offline` when dependencies have not been downloaded. For another core location,
+pass `-PcoreDir=<path>` (and configure `JAVA_HOME` as needed).
 
-- `soulcatcherplus-1.0.0+1.16.5.jar` — core.
-- `soulcatcherplus-compat-1.0.0+1.16.5.jar` — this addon.
+`build.gradle` delegates to the matching core build, which applies `core-integration.gradle`.
+The addon compiles against core output and packages only addon classes/resources.
+Output: `build/1.16.5/libs/soulcatcherplus-compat-1.0.0+1.16.5.jar`.
+The core's `build`, `compatJar`, `runClient` and (1.16.5) `playtestZip` also use this
+external checkout when available. `-PwithoutCompatAddon` or an absent addon checkout
+leaves the core independent. Core release builds and historical tags are unchanged.
 
-Install both on client and server, with the chosen creature mods and their
-dependencies. The addon requires the matching core version; update the pair
-together. The playtest ZIP includes both JARs and original dependency JARs.
+Do not run simultaneous builds of the same core/addon checkout. Keep game worlds
+separate for each Minecraft version. See the core's [public API](https://github.com/1PixelDemon1/soul-catcher-plus/blob/develop/docs/API.md)
+for extension points; individual integrations must not register duplicate adapters.
 
-## Development layout
+## History and license
 
-`build.gradle` owns the `compat` source set and `compatJar`/`reobfCompatJar` tasks.
-The addon compiles against the core output, but packages only its own source-set
-output. A normal build assembles both reobfuscated JARs. Development `runClient`
-and `runServer` include both mod source sets and both Mixin configurations.
-Use `-PwithoutCompatAddon` to launch only the core for manual isolation checks.
-
-Keep each integration behind its optional-mod check and use
-`SoulAdapters.register(entityId, adapter)` during common setup. Do not copy the
-core's ownership or economy rules. See [the public API](../../docs/API.md).
-Future per-mod addons can move these adapters and mixins into their own source
-sets/JARs; they must remove their registration from this combined addon to avoid
-duplicate adapters. The current registry deliberately rejects duplicate IDs.
+The original `addons/compat` commit history is preserved with paths rooted here.
+This extraction creates no release or release tags. [MIT](LICENSE).
