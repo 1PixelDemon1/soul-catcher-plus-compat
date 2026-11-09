@@ -30,3 +30,13 @@ Compile and launch the current development client for manual checks; confirm sta
 from logs. Never force-close a running client or discard worlds. Automated tests,
 GameTests and game UI automation require a separate request. Keep paths, dependencies,
 caches, tools, build outputs and local worlds ignored. Do not commit local.properties.
+
+Current 1.16.5 development targets core 1.2.0+1.16.5 through the configured JAR.
+The Ferrous Wroughtnaut adapter and profile were removed at the user's request;
+do not reintroduce them when porting. Keep the generic Mowzie area-attack ally filter.
+Future 1.19.2 releases must target Forge 43.5.0; 1.20.1 retains Forge 47.4.28.
+
+`forge/26.3` targets Forge 66.1.5 and Java 25. It uses ForgeGradle 7 and the
+unobfuscated installable core JAR directly; do not use fg.deobf or reobfJar there.
+Creature integrations on 26.3 are unverified until matching third-party builds are
+available and checked. Use the matching Java 25 scripts on that branch.
