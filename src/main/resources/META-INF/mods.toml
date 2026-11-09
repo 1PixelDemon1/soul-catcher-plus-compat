@@ -5,6 +5,8 @@ license="MIT"
 modId="soulcatcherplus_compat"
 version="${mod_version}"
 displayName="Soul Catcher Plus: Mod Integrations"
+logoFile="logo.png"
+logoBlur=false
 description='''Combined development addon for Mowzie's Mobs, Twilight Forest and Aquamirae. Requires Soul Catcher Plus; creature mods are optional.'''
 [[dependencies.soulcatcherplus_compat]]
 modId="forge"
@@ -21,7 +23,7 @@ side="BOTH"
 [[dependencies.soulcatcherplus_compat]]
 modId="soulcatcherplus"
 mandatory=true
-versionRange="[${mod_version}]"
+versionRange="[${core_version}]"
 ordering="AFTER"
 side="BOTH"
 [[dependencies.soulcatcherplus_compat]]
