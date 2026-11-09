@@ -30,3 +30,8 @@ Compile and launch the current development client for manual checks; confirm sta
 from logs. Never force-close a running client or discard worlds. Automated tests,
 GameTests and game UI automation require a separate request. Keep paths, dependencies,
 caches, tools, build outputs and local worlds ignored. Do not commit local.properties.
+
+`forge/26.3` targets Forge 66.1.5 and Java 25. It uses ForgeGradle 7 and the
+unobfuscated installable core JAR directly; do not use fg.deobf or reobfJar there.
+Creature integrations on 26.3 are unverified until matching third-party builds are
+available and checked. Use the matching Java 25 scripts on that branch.

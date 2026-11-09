@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Aquamirae 6.1.2–6.4.0 updates a shared cooldown before calling the vanilla music manager. */
+/** Aquamirae 6.1.2â€“6.4.0 updates a shared cooldown before calling the vanilla music manager. */
 @Pseudo
 @Mixin(targets = "com.obscuria.aquamirae.AquamiraeClient", remap = false)
 public abstract class AquamiraeCompanionMusicMixin {

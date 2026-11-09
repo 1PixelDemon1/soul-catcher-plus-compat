@@ -19,8 +19,6 @@ public final class CompatAddon {
 
     private void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
-            if (ModList.get().isLoaded("mowziesmobs"))
-                SoulAdapters.register(new ResourceLocation("mowziesmobs", "ferrous_wroughtnaut"), new WroughtnautAdapter());
             if (ModList.get().isLoaded("twilightforest")) TwilightForestCompat.register();
             org.apache.logging.log4j.LogManager.getLogger().info("Soul Catcher Plus integration addon initialized");
         });
