@@ -1,16 +1,25 @@
+// This is a minimal setup of a Forge mod workspace.
+// For complex examples (including AccessTransformers, Jar-in-Jar, and Mixin), see our examples repository.
+// https://github.com/MinecraftForge/MDKExamples
+
 plugins {
     id 'java'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'idea'
+    id 'eclipse'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
 version = mod_version
-group = 'dev.soulcatcherplus'
+group = mod_group_id
 base { archivesName = 'soulcatcherplus-compat' }
-layout.buildDirectory = layout.projectDirectory.dir("build/${minecraft_version}")
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
-    withSourcesJar()
-}
+layout.buildDirectory = layout.projectDirectory.dir('build/26.3')
+java.withSourcesJar()
+
+// Mojang ships Java 25 to end users in 26.1+, so your mod should target Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+// Include generated resources
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 def localSettings = new Properties()
 def localSettingsFile = file('local.properties')
@@ -43,101 +52,70 @@ new java.util.jar.JarFile(coreJar).withCloseable { archive ->
     }
 }
 
-// A content-based dependency version invalidates ForgeGradle's remap cache when
-// a locally rebuilt JAR replaces an older file with the same name and mod version.
-def coreDigest = java.security.MessageDigest.getInstance('SHA-256')
-coreJar.withInputStream { stream ->
-    byte[] buffer = new byte[65536]
-    int count
-    while ((count = stream.read(buffer)) != -1) coreDigest.update(buffer, 0, count)
-}
-def coreHash = coreDigest.digest().encodeHex().toString()
-def coreArtifact = coreJar.name.substring(0, coreJar.name.length() - 4)
-def coreDependency = "local.soulcatcherplus:${coreArtifact}:${coreHash}"
-
 minecraft {
-    mappings channel: 'official', version: minecraft_version
-    copyIdeResources = true
     runs {
         configureEach {
-            workingDirectory project.file("run/${minecraft_version}")
-            property 'forge.logging.console.level', 'info'
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${layout.buildDirectory.get().asFile}/createSrgToMcp/output.srg"
+            workingDir = layout.projectDirectory.dir('run')
+
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
             args '--mixin', 'soulcatcherplus_compat.mixins.json'
-            mods { soulcatcherplus_compat { source sourceSets.main } }
+            systemProperty 'forge.enabledGameTestNamespaces', mod_id
         }
-        client { workingDirectory project.file("run-client/${minecraft_version}") }
-        server { args '--nogui' }
+
+        register('client')
+
+        register('server') {
+            args '--nogui'
+        }
+
+        register('gameTestServer')
+
+        register('data') {
+            workingDir = layout.projectDirectory.dir('run-data')
+
+            args '--mod', mod_id, '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
+        }
     }
 }
+
 repositories {
-    flatDir {
-        dirs coreJar.parentFile
-        content { includeGroup 'local.soulcatcherplus' }
-    }
-    maven { url = 'https://libraries.minecraft.net' }
+    minecraft.mavenizer(it) // In Kotlin, it = this
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
     mavenCentral()
-    maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
-    maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
 }
-configurations { playtestMods { transitive = false } }
+
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation fg.deobf(coreDependency)
-    if (minecraft_version == '1.16.5') {
-        annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
-        compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
-        if (project.hasProperty('withTwilightForest')) {
-            runtimeOnly fg.deobf('curse.maven:the-twilight-forest-227639:3575220')
-            playtestMods 'curse.maven:the-twilight-forest-227639:3575220'
-        }
-        if (project.hasProperty('withAquamirae')) {
-            ['maven.modrinth:8BmcQJ2H:UQGoJDhn', 'curse.maven:aquamirae-536254:4420334', 'curse.maven:obscure-api-638417:4420298'].each { mod ->
-                runtimeOnly fg.deobf(mod)
-                playtestMods mod
-            }
-        }
-    } else {
-        if (project.hasProperty('withTwilightForest')) {
-            def twilight = minecraft_version == '1.19.2' ? '4389567' : '5468648'
-            runtimeOnly fg.deobf("curse.maven:the-twilight-forest-227639:${twilight}")
-            playtestMods "curse.maven:the-twilight-forest-227639:${twilight}"
-        }
-        if (project.hasProperty('withMowzies')) {
-            def mowzie = minecraft_version == '1.19.2' ? '5180680' : '7815705'
-            def gecko = minecraft_version == '1.19.2' ? '4407241' : '7553267'
-            runtimeOnly fg.deobf("curse.maven:mowzies-mobs-250498:${mowzie}")
-            runtimeOnly fg.deobf("curse.maven:geckolib-388172:${gecko}")
-            playtestMods "curse.maven:mowzies-mobs-250498:${mowzie}"
-            playtestMods "curse.maven:geckolib-388172:${gecko}"
-        }
-    }
+    implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.1.5')
+    implementation files(coreJar)
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.6'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
 }
-tasks.named('processResources', ProcessResources).configure {
-    inputs.properties(mod_version: mod_version, core_version: core_version)
-    filesMatching('META-INF/mods.toml') { expand mod_version: mod_version, core_version: core_version }
-}
+
 tasks.withType(JavaCompile).configureEach {
+    // Use the UTF-8 charset for Java compilation
+    // This is done by default in Java 18+, but this ensures it no matter the Java or Gradle version
     options.encoding = 'UTF-8'
-    options.release = minecraft_version == '1.16.5' ? 8 : 17
 }
-tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(minecraft_version == '1.16.5' ? 8 : 17)
-    }
+
+def releaseVersion = providers.gradleProperty('mod_version').get()
+def requiredCoreVersion = providers.gradleProperty('core_version').get()
+tasks.named('processResources', ProcessResources).configure {
+    inputs.properties(mod_version: releaseVersion, core_version: requiredCoreVersion)
+    filesMatching('META-INF/mods.toml') { expand mod_version: releaseVersion, core_version: requiredCoreVersion }
 }
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs', '1500'] }
 tasks.named('jar', Jar).configure {
-    manifest { attributes 'Implementation-Version': mod_version, 'MixinConfigs': 'soulcatcherplus_compat.mixins.json' }
-    finalizedBy 'reobfJar'
+    manifest { attributes 'Implementation-Version': releaseVersion, 'MixinConfigs': 'soulcatcherplus_compat.mixins.json' }
 }
-tasks.register('playtestZip', Zip) {
-    group = 'build'
-    description = 'Packages the addon, configured original core JAR and selected playtest dependencies.'
-    dependsOn 'reobfJar'
-    archiveFileName = "soulcatcherplus-compat-${minecraft_version}-playtest.zip"
-    destinationDirectory = layout.buildDirectory.dir('playtest')
-    from(tasks.named('jar')) { into 'mods' }
-    from(coreJar) { into 'mods' }
-    from(configurations.playtestMods) { into 'mods' }
+
+tasks.named('test') { useJUnitPlatform() }
+
+// ForgeGradle's merged development output is shared by these tasks. Resource
+// restoration must finish first, otherwise cached resources can erase classes.
+tasks.named('compileJava') {
+    dependsOn tasks.named('processResources')
+    outputs.cacheIf { false }
 }
+tasks.named('processResources') { outputs.cacheIf { false } }

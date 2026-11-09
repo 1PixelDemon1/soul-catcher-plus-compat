@@ -5,7 +5,7 @@ import dev.soulcatcherplus.api.SoulAdapter;
 import dev.soulcatcherplus.api.SoulAdapters;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -14,10 +14,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 /** Optional native master links, verified against Twilight Forest 4.3.2508 for 1.20.1. */
 public final class TwilightForestCompat {
     private static final Object[] NO_ARGUMENTS = {};
-    private static final ResourceLocation ICE_CRYSTAL = new ResourceLocation("twilightforest", "ice_crystal");
+    private static final Identifier ICE_CRYSTAL = Identifier.fromNamespaceAndPath("twilightforest", "ice_crystal");
 
     public static void register() {
-        SoulAdapters.register(new ResourceLocation("twilightforest", "snow_queen"), new SoulAdapter() {
+        SoulAdapters.register(Identifier.fromNamespaceAndPath("twilightforest", "snow_queen"), new SoulAdapter() {
             @Override public boolean inheritsTickSpawn(Mob summoner, EntityType<?> childType) {
                 return ICE_CRYSTAL.equals(ForgeRegistries.ENTITY_TYPES.getKey(childType));
             }
@@ -27,8 +27,8 @@ public final class TwilightForestCompat {
             Class<?> minion = Class.forName("twilightforest.entity.monster.LichMinion");
             MasterLink clones = new MethodLink(lich.getMethod("getMasterLich"), lich.getMethod("setMaster", lich));
             MasterLink zombies = new FieldLink(minion.getField("master"));
-            SoulAdapters.register(new ResourceLocation("twilightforest", "lich"), new MasterAdapter(lich, clones));
-            SoulAdapters.register(new ResourceLocation("twilightforest", "lich_minion"), new MasterAdapter(lich, zombies));
+            SoulAdapters.register(Identifier.fromNamespaceAndPath("twilightforest", "lich"), new MasterAdapter(lich, clones));
+            SoulAdapters.register(Identifier.fromNamespaceAndPath("twilightforest", "lich_minion"), new MasterAdapter(lich, zombies));
         } catch (ReflectiveOperationException | LinkageError error) {
             com.mojang.logging.LogUtils.getLogger().warn("Twilight Forest native summoner links are unavailable", error);
         }

@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/** Aquamirae 6.1.2–6.4.0 updates a shared cooldown before calling the vanilla music manager. */
+/** Aquamirae 6.1.2â€“6.4.0 updates a shared cooldown before calling the vanilla music manager. */
 @Pseudo
 @Mixin(targets = "com.obscuria.aquamirae.AquamiraeClient", remap = false)
 public abstract class AquamiraeCompanionMusicMixin {
@@ -37,11 +37,11 @@ public abstract class AquamiraeCompanionMusicMixin {
     }
     @Inject(method = "<clinit>", at = @At("RETURN"), remap = false)
     private static void soulcatcherplus$registerCooldownListener(CallbackInfo callback) {
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(AquamiraeCompanionMusicMixin::soulcatcherplus$releaseCompanionCooldown);
+        TickEvent.ClientTickEvent.Post.BUS.addListener(AquamiraeCompanionMusicMixin::soulcatcherplus$releaseCompanionCooldown);
     }
     @Unique
-    private static void soulcatcherplus$releaseCompanionCooldown(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || soulcatcherplus$lastMusicSource == null) return;
+    private static void soulcatcherplus$releaseCompanionCooldown(TickEvent.ClientTickEvent.Post event) {
+        if (soulcatcherplus$lastMusicSource == null) return;
         Entity source = soulcatcherplus$lastMusicSource.get();
         if (source == null || source.level() != Minecraft.getInstance().level || corneliaMusic <= 0) {
             soulcatcherplus$lastMusicSource = null;
