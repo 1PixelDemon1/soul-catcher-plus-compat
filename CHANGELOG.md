@@ -4,6 +4,19 @@
 
 No changes yet.
 
+## 1.2.2 — 2026-11-12
+
+Matching core/addon builds target Minecraft 1.16.5/1.19.2/1.20.1/26.3 with Forge 36.2.42/43.5.0/47.4.28/66.1.0 and Java 8/17/17/25.
+
+- Add Ice and Fire terrain/form/preview corrections on 1.16.5, 1.19.2, and 1.20.1. Preserve native charge area damage with scoped newer-port terrain hooks, freeze captured growth, use a 100-block dragon range, and preserve Hydra head/severing previews.
+- Baselines: IAF 2.1.12 patch-1 + Citadel 1.8.1 (16), IAF 2.1.13 beta3/file5037952 + Citadel 2.1.4/file4556677 (19), IAF 2.1.13 beta5/file5633453 + Citadel 2.6.3/file7476570 (20).
+- Extend Twilight Forest 4.0.870/4.2.1518/4.3.2508 ownership to Ur-Ghast, Swarm Spider, and Tower/Carminite Broodling descendants; isolate master searches/clone cleanup by lineage. The old Lich constructor/type fix applies only to 1.16.5.
+- Retain Mowzie ally filtering and version-specific Aquamirae music; Wroughtnaut-specific activation stays removed and Aquamirae 7.x remains unverified.
+- Align 26.3 with Forge 66.1.0; certify no creature integration without matching verified dependencies.
+- Adopt the approved right-aligned COMPAT banner and portable standalone core-JAR setup. Original dependencies remain unmodified in playtest archives; legacy IAF dev normalization stays local.
+
+All four fresh addon builds, archive audits, and dedicated-server startups passed with graceful exit 0. Profiles used IAF/TF/Aquamirae (16), IAF/TF (19/20), and core/addon only (26.3); the 1.16.5 client also completed resource/sound/atlas startup. Source/API review found no remaining actionable issues. No automated tests/GameTests/UI or gameplay/multiplayer tests ran. Known external diagnostics do not certify error-free logs or 26.3 creature integrations. See [release notes](docs/releases/1.2.2.md).
+
 ## 1.2.0 — 2026-11-10
 
 Release separate addon builds matching core 1.2.0 for Minecraft 1.16.5 / Forge 36.2.42 / Java 8, Minecraft 1.19.2 / Forge 43.5.0 / Java 17, Minecraft 1.20.1 / Forge 47.4.28 / Java 17, and Minecraft 26.3 / Forge 66.1.5 / Java 25.
