@@ -4,10 +4,17 @@
   "package": "dev.soulcatcherplus.addon.compat.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MowzieAreaTargetsMixin"
+    "MowzieAreaTargetsMixin",
+    "TwilightLichMinionSearchMixin",
+    "TwilightLichShadowsMixin",
+    "TwilightUrGhastSummonMixin",
+    "IceAndFireDragonDestructionMixin",
+    "IceAndFireSeaSerpentMixin",
+    "IceAndFireDeathWormMixin"
   ],
   "client": [
-    "client.AquamiraeCompanionMusicMixin"
+    "client.AquamiraeCompanionMusicMixin",
+    "client.IceAndFireDragonPreviewMixin"
   ],
   "injectors": {
     "defaultRequire": 1
