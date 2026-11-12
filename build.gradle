@@ -28,6 +28,8 @@ if (!coreJar.isFile() || !coreJar.name.toLowerCase().endsWith('.jar')) {
 new java.util.jar.JarFile(coreJar).withCloseable { archive ->
     def entry = archive.getJarEntry('META-INF/mods.toml')
     if (entry == null) throw new GradleException('The selected JAR has no Forge mod metadata.')
+    if (archive.getJarEntry('dev/soulcatcherplus/api/client/SoulPreviews.class') == null)
+        throw new GradleException('Compat 1.2.2 needs the matching core 1.2.2 runtime JAR with the preview/range API; update soulcatcherplusJar.')
     def metadata = archive.getInputStream(entry).withCloseable { it.getText('UTF-8') }
     def coreModVersion = null
     def modTables = metadata =~ /(?ms)^\s*\[\[mods\]\]\s*(.*?)(?=^\s*\[\[|\z)/
@@ -86,6 +88,19 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     implementation fg.deobf(coreDependency)
     if (minecraft_version == '1.16.5') {
+        // Optional at runtime; compile against the exact inspected Ice and Fire API.
+        compileOnly fg.deobf('curse.maven:the-twilight-forest-227639:3575220')
+        def iceAndFire = 'curse.maven:ice-and-fire-dragons-264231:4614457'
+        def citadel = 'curse.maven:citadel-331936:3441028'
+        compileOnly fg.deobf(iceAndFire)
+        compileOnly fg.deobf(citadel)
+        if (project.hasProperty('withIceAndFire')) {
+            apply from: 'scripts/ice_and_fire_dev.gradle'
+            runtimeOnly fg.deobf(iceAndFireDevelopmentDependency())
+            runtimeOnly fg.deobf(citadel)
+            playtestMods iceAndFire
+            playtestMods citadel
+        }
         annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
         compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:1.0.0'
         if (project.hasProperty('withTwilightForest')) {

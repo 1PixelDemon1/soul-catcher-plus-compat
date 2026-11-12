@@ -1,0 +1,109 @@
+import java.security.MessageDigest
+import java.util.jar.JarFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.VarInsnNode
+
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'org.ow2.asm:asm-tree:9.5' }
+}
+
+// Official mappings merge IAF's custom getScale with its vanilla forwarding
+// override. Only the development dependency needs normalization; production
+// and playtest archives must always use the unmodified CurseMaven artifact.
+ext.iceAndFireDevelopmentDependency = {
+    // Do not resolve a Gradle configuration here: ForgeGradle still needs to
+    // finish configuring its remapping repositories after this script returns.
+    def filename = 'ice-and-fire-dragons-264231-4614457.jar'
+    def expectedHash = '29e66bd0199169649f6de4e4b0ef00a67555eb348f10b8d01794c20d67f128c8'
+    def cache = new File(gradle.gradleUserHomeDir,
+        'caches/modules-2/files-2.1/curse.maven/ice-and-fire-dragons-264231/4614457')
+    def original = cache.isDirectory() ? fileTree(cache).matching { include "**/${filename}" }.files.find() : null
+    if (original == null) {
+        original = file(".tools/ice-and-fire-original/${filename}")
+        if (!original.isFile()) {
+            if (gradle.startParameter.offline)
+                throw new GradleException('Cache Ice and Fire with a normal build before running its development profile offline.')
+            original.parentFile.mkdirs()
+            def connection = new URL('https://cursemaven.com/curse/maven/ice-and-fire-dragons-264231/4614457/' + filename).openConnection()
+            connection.setRequestProperty('User-Agent', 'SoulCatcherPlusCompat-development')
+            connection.connectTimeout = 15000
+            connection.readTimeout = 45000
+            def download = new File(original.parentFile, original.name + '.download')
+            try {
+                connection.inputStream.withCloseable { input -> download.withOutputStream { it << input } }
+                def downloadedHash = MessageDigest.getInstance('SHA-256').digest(download.bytes).encodeHex().toString()
+                if (downloadedHash != expectedHash)
+                    throw new GradleException('Ice and Fire download failed SHA-256 verification.')
+                java.nio.file.Files.move(download.toPath(), original.toPath())
+            } finally {
+                if (download.exists()) download.delete()
+            }
+        }
+    }
+    def originalHash = MessageDigest.getInstance('SHA-256').digest(original.bytes).encodeHex().toString()
+    if (originalHash != expectedHash)
+        throw new GradleException('Unexpected Ice and Fire JAR: the development normalization requires the verified 2.1.12 patch-1 artifact.')
+    def digest = MessageDigest.getInstance('SHA-256')
+    digest.update(original.bytes)
+    digest.update(file('scripts/ice_and_fire_dev.gradle').bytes)
+    def version = digest.digest().encodeHex().toString()
+    def directory = file('.tools/dev-libraries/1.16.5')
+    def output = new File(directory, "iceandfire-dev-${version}.jar")
+    def targets = ['EntityDreadScuttler', 'EntityDreadBeast', 'EntityDreadGhoul'].collect {
+        "com/github/alexthe666/iceandfire/entity/${it}.class".toString()
+    } as Set
+
+    if (!output.isFile()) {
+        directory.mkdirs()
+        def temporary = new File(directory, output.name + '.tmp')
+        try {
+            new JarFile(original).withCloseable { source ->
+                new ZipOutputStream(new FileOutputStream(temporary)).withCloseable { destination ->
+                    source.entries().each { entry ->
+                        byte[] bytes = source.getInputStream(entry).withCloseable { it.bytes }
+                        if (targets.remove(entry.name)) {
+                            def node = new ClassNode()
+                            new ClassReader(bytes).accept(node, 0)
+                            def bridges = node.methods.findAll { it.name == 'func_213355_cm' && it.desc == '()F' }
+                            def getters = node.methods.findAll { it.name == 'getScale' && it.desc == '()F' }
+                            if (bridges.size() != 1 || getters.size() != 1)
+                                throw new GradleException("Unexpected Ice and Fire scale methods in ${entry.name}")
+                            def code = bridges[0].instructions.toArray().findAll { it.opcode >= 0 }
+                            if (code.size() != 3 || !(code[0] instanceof VarInsnNode)
+                                    || code[0].opcode != Opcodes.ALOAD || code[0].var != 0
+                                    || !(code[1] instanceof MethodInsnNode) || code[1].opcode != Opcodes.INVOKEVIRTUAL
+                                    || code[1].owner != node.name || code[1].name != 'getScale' || code[1].desc != '()F'
+                                    || code[2].opcode != Opcodes.FRETURN)
+                                throw new GradleException("Ice and Fire scale override is not the verified forwarding bridge: ${entry.name}")
+                            node.methods.remove(bridges[0])
+                            def writer = new ClassWriter(0)
+                            node.accept(writer)
+                            bytes = writer.toByteArray()
+                        }
+                        def copied = new ZipEntry(entry.name)
+                        copied.time = entry.time
+                        destination.putNextEntry(copied)
+                        destination.write(bytes)
+                        destination.closeEntry()
+                    }
+                }
+            }
+            if (!targets.isEmpty()) throw new GradleException("Missing Ice and Fire development classes: ${targets}")
+            java.nio.file.Files.move(temporary.toPath(), output.toPath())
+        } finally {
+            if (temporary.exists()) temporary.delete()
+        }
+    }
+    repositories.flatDir {
+        dirs directory
+        content { includeGroup 'local.soulcatcherplus.iceandfire' }
+    }
+    return "local.soulcatcherplus.iceandfire:iceandfire-dev:${version}"
+}
