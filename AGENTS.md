@@ -31,7 +31,18 @@ from logs. Never force-close a running client or discard worlds. Automated tests
 GameTests and game UI automation require a separate request. Keep paths, dependencies,
 caches, tools, build outputs and local worlds ignored. Do not commit local.properties.
 
-`forge/26.3` targets Forge 66.1.5 and Java 25. It uses ForgeGradle 7 and the
+`forge/26.3` targets Forge 66.1.0 and Java 25. It uses ForgeGradle 7 and the
 unobfuscated installable core JAR directly; do not use fg.deobf or reobfJar there.
 Creature integrations on 26.3 are unverified until matching third-party builds are
 available and checked. Use the matching Java 25 scripts on that branch.
+
+## Approved banner for the next release
+
+Use `art/branding/logo-banner-compat-v2.png` for GitHub and other banner placements
+starting with the next explicitly requested Compat release, including its ports.
+This is the user-approved variant with smaller glowing cyan COMPAT lettering
+right-aligned below CATCHER. Preserve its transparency and aspect ratio.
+The runtime mod icon remains `src/main/resources/logo.png`.
+Keep historical release artifacts and notes unchanged. Retain only approved,
+used artwork in the repository; drafts and cleanup backups belong in ignored
+local tooling directories. Branding guidance belongs here, without extra READMEs.

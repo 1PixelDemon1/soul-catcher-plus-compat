@@ -11,7 +11,7 @@ description='''Combined development addon for Mowzie's Mobs, Twilight Forest and
 [[dependencies.soulcatcherplus_compat]]
 modId="forge"
 mandatory=true
-versionRange="[66.1.5,67)"
+versionRange="[66.1.0,67)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.soulcatcherplus_compat]]
