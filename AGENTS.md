@@ -31,12 +31,33 @@ from logs. Never force-close a running client or discard worlds. Automated tests
 GameTests and game UI automation require a separate request. Keep paths, dependencies,
 caches, tools, build outputs and local worlds ignored. Do not commit local.properties.
 
-Current 1.16.5 development targets core 1.2.0+1.16.5 through the configured JAR.
+Current 1.16.5 development targets core 1.2.2+1.16.5 through the configured JAR.
 The Ferrous Wroughtnaut adapter and profile were removed at the user's request;
 do not reintroduce them when porting. Keep the generic Mowzie area-attack ally filter.
 Future 1.19.2 releases must target Forge 43.5.0; 1.20.1 retains Forge 47.4.28.
 
-`forge/26.3` targets Forge 66.1.5 and Java 25. It uses ForgeGradle 7 and the
+`forge/26.3` targets Forge 66.1.0 and Java 25. It uses ForgeGradle 7 and the
 unobfuscated installable core JAR directly; do not use fg.deobf or reobfJar there.
 Creature integrations on 26.3 are unverified until matching third-party builds are
 available and checked. Use the matching Java 25 scripts on that branch.
+
+## Approved banner for the next release
+
+Use `art/branding/logo-banner-compat-v2.png` for GitHub and other banner placements
+starting with the next explicitly requested Compat release, including its ports.
+This is the user-approved variant with smaller glowing cyan COMPAT lettering
+right-aligned below CATCHER. Preserve its transparency and aspect ratio.
+The runtime mod icon remains `src/main/resources/logo.png`.
+Keep historical release artifacts and notes unchanged. Retain only approved,
+used artwork in the repository; drafts and cleanup backups belong in ignored
+local tooling directories. Branding guidance belongs here, without extra READMEs.
+
+Ice and Fire development uses `-PwithIceAndFire`: 2.1.12-1.16.5-patch-1 with
+Citadel 1.8.1. These are optional runtime mods, not bundled dependencies.
+Dragon form identity uses color and growth stage; retain the captured age in
+previews and freeze companion growth. Terrain hooks must preserve entity damage.
+
+`scripts/ice_and_fire_dev.gradle` normalizes only the three verified Dread scale
+forwarders in an ignored development dependency before official remapping. Keep
+the original IAF JAR for compilation/playtest archives and never bundle it.
+Generated dev dependencies live in `.tools`, surviving Gradle `clean`.
