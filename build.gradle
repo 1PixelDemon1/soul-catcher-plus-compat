@@ -29,7 +29,7 @@ new java.util.jar.JarFile(coreJar).withCloseable { archive ->
     def entry = archive.getJarEntry('META-INF/mods.toml')
     if (entry == null) throw new GradleException('The selected JAR has no Forge mod metadata.')
     if (archive.getJarEntry('dev/soulcatcherplus/api/client/SoulPreviews.class') == null)
-        throw new GradleException('Compat 1.2.2 needs the matching core 1.2.2 runtime JAR with the preview/range API; update soulcatcherplusJar.')
+        throw new GradleException('Compat 1.2.3 needs the matching core 1.2.3 runtime JAR with the preview/range API; update soulcatcherplusJar.')
     def metadata = archive.getInputStream(entry).withCloseable { it.getText('UTF-8') }
     def coreModVersion = null
     def modTables = metadata =~ /(?ms)^\s*\[\[mods\]\]\s*(.*?)(?=^\s*\[\[|\z)/
