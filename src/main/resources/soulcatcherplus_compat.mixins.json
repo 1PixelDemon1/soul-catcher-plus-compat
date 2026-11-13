@@ -10,7 +10,9 @@
     "TwilightUrGhastSummonMixin",
     "IceAndFireDragonDestructionMixin",
     "IceAndFireSeaSerpentMixin",
-    "IceAndFireDeathWormMixin"
+    "IceAndFireDeathWormMixin",
+    "IceAndFireSirenMixin",
+    "IceAndFireSirenCharmMixin"
   ],
   "client": [
     "client.AquamiraeCompanionMusicMixin",
