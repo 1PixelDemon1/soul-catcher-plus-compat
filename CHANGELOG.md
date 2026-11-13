@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-- Keep owned Ice and Fire Sirens in their normal client appearance. Prevent their charm from affecting the owner and allied companions, and clear existing charm from those same friendly Sirens; retain native wild behavior and server combat.
+- Show owned Ice and Fire Sirens in their monster form during native bite/pull attack animations and their normal form otherwise. Prevent their charm from affecting the owner and allied companions, and clear existing charm from those same friendly Sirens; retain native wild behavior and server combat.
 
-## 1.2.2 вЂ” 2026-11-12
+## 1.2.2 РІР‚вЂќ 2026-11-12
 
 Matching core/addon builds target Minecraft 1.16.5/1.19.2/1.20.1/26.3 with Forge 36.2.42/43.5.0/47.4.28/66.1.0 and Java 8/17/17/25.
 
@@ -17,7 +17,7 @@ Matching core/addon builds target Minecraft 1.16.5/1.19.2/1.20.1/26.3 with Forge
 
 All four fresh addon builds, archive audits, and dedicated-server startups passed with graceful exit 0. Profiles used IAF/TF/Aquamirae (16), IAF/TF (19/20), and core/addon only (26.3); the 1.16.5 client also completed resource/sound/atlas startup. Source/API review found no remaining actionable issues. No automated tests/GameTests/UI or gameplay/multiplayer tests ran. Known external diagnostics do not certify error-free logs or 26.3 creature integrations. See [release notes](docs/releases/1.2.2.md).
 
-## 1.2.0 вЂ” 2026-11-10
+## 1.2.0 РІР‚вЂќ 2026-11-10
 
 Release separate addon builds matching core 1.2.0 for Minecraft 1.16.5 / Forge 36.2.42 / Java 8, Minecraft 1.19.2 / Forge 43.5.0 / Java 17, Minecraft 1.20.1 / Forge 47.4.28 / Java 17, and Minecraft 26.3 / Forge 66.1.5 / Java 25.
 
