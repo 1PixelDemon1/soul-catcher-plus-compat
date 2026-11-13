@@ -12,7 +12,9 @@
     "TwilightLichSummonMixin",
     "TwilightLichMinionSearchMixin",
     "TwilightLichShadowsMixin",
-    "TwilightUrGhastSummonMixin"
+    "TwilightUrGhastSummonMixin",
+    "IceAndFireSirenMixin",
+    "IceAndFireSirenCharmMixin"
   ],
   "client": [
     "client.AquamiraeCompanionMusicMixin",
