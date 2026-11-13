@@ -21,6 +21,7 @@ public final class IceAndFireCompat {
         for (String dragon : new String[]{"fire_dragon", "ice_dragon", "lightning_dragon"})
             SoulAdapters.register(new ResourceLocation("iceandfire", dragon), new IceAndFireDragonAdapter());
         SoulAdapters.register(new ResourceLocation("iceandfire", "hydra"), new IceAndFireHydraAdapter());
+        SoulAdapters.register(new ResourceLocation("iceandfire", "siren"), new IceAndFireSirenAdapter());
         MinecraftForge.EVENT_BUS.register(IceAndFireCompat.class);
     }
 

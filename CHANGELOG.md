@@ -4,6 +4,17 @@
 
 No changes yet.
 
+## 1.2.3 — 2026-11-13
+
+Standalone addon builds require core 1.2.3 for Minecraft 1.16.5/1.19.2/1.20.1/26.3; Forge targets are 36.2.42/43.5.0/47.4.28/66.1.0 with Java 8/17/17/25.
+
+- Show owned IAF Sirens in normal form except during native BITE/PULL attack animations, preserving native server combat and wild behavior.
+- Block owner/allied charm from an owned Siren and clear existing charm from that same friendly source, preventing its pink overlay/forced approach/jump-scare sequence without disabling unrelated wild charm.
+- Port the Siren correction to matching IAF 1.19.2/1.20.1 APIs. Legacy SirenProperties guards remain on 16/19; the 20 SirenData tick clears friendly charm after owner restoration and before effects/data sync. No creature integration is certified for 26.3.
+- Require the matching 1.2.3 core, retain previous IAF/TF/Mowzie/Aquamirae corrections and approved branding, and preserve the separate installable-core-JAR development setup.
+
+All four fresh addon builds, archive audits, and ordinary installed-production-client startups passed before publication; clients closed normally without entering worlds. Final source/API review found no actionable issues. Older clients used version-matched creature dependencies; 26.3 used core/addon only. No automated tests, GameTests, UI automation, gameplay, multiplayer, manual combat, or fresh dedicated-server checks ran. See [release notes](docs/releases/1.2.3.md) for profiles and known external warnings.
+
 ## 1.2.2 — 2026-11-12
 
 Matching core/addon builds target Minecraft 1.16.5/1.19.2/1.20.1/26.3 with Forge 36.2.42/43.5.0/47.4.28/66.1.0 and Java 8/17/17/25.
