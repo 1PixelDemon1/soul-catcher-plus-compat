@@ -20,7 +20,7 @@ public abstract class MowzieAreaTargetsMixin {
         "getAttackableEntityLivingBaseNearby(DDDD)Ljava/util/List;",
         "getEntitiesNearby(Ljava/lang/Class;D)Ljava/util/List;",
         "getEntitiesNearby(Ljava/lang/Class;DDDD)Ljava/util/List;"
-    }, at = @At("RETURN"), cancellable = true, remap = false, require = 1)
+    }, at = @At("RETURN"), cancellable = true, remap = false, require = 0)
     private void soulcatcherplus$excludeAllies(CallbackInfoReturnable<List<Entity>> callback) {
         if ((Object) this instanceof Mob mob && CompanionBrain.isSoul(mob))
             callback.setReturnValue(callback.getReturnValue().stream()
