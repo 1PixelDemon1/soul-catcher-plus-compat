@@ -5,14 +5,20 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "MowzieAreaTargetsMixin",
+    "AquamiraeMazeMotherTerrainMixin",
+    "MowzieIceBreathTerrainMixin",
+    "MowzieElokosaTerrainMixin",
     "TwilightLichMinionSearchMixin",
     "TwilightLichShadowsMixin",
+    "TwilightTerrainMixin",
+    "TwilightFallingIceLandingMixin",
     "TwilightUrGhastSummonMixin",
     "IceAndFireDragonDestructionMixin",
     "IceAndFireSeaSerpentMixin",
     "IceAndFireDeathWormMixin",
     "IceAndFireSirenMixin",
-    "IceAndFireSirenCharmMixin"
+    "IceAndFireSirenCharmMixin",
+    "IceAndFireLegacySirenCharmMixin"
   ],
   "client": [
     "client.AquamiraeCompanionMusicMixin",

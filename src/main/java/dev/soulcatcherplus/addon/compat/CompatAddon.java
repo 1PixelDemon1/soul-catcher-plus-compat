@@ -3,6 +3,7 @@ package dev.soulcatcherplus.addon.compat;
 
 import dev.soulcatcherplus.api.SoulAdapters;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -19,6 +20,7 @@ public final class CompatAddon {
 
     private void setup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
+            MinecraftForge.EVENT_BUS.register(CompanionTerrain.class);
             if (ModList.get().isLoaded("iceandfire")) IceAndFireCompat.register();
             if (ModList.get().isLoaded("twilightforest")) TwilightForestCompat.register();
             org.apache.logging.log4j.LogManager.getLogger().info("Soul Catcher Plus integration addon initialized");
