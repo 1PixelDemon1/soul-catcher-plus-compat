@@ -24,12 +24,15 @@ if (!coreJar.isFile() || !coreJar.name.toLowerCase().endsWith('.jar')) {
     throw new GradleException("Soul Catcher Plus JAR not found: ${coreJar}. Use an installable JAR, not a sources/dev JAR.")
 }
 
+def compatibleCoreVersions = [core_version.toString(), "1.3.0-prerelease+${minecraft_version}".toString()].unique()
+def coreVersionRange = compatibleCoreVersions.collect { "[${it}]" }.join(',')
+
 // Check the actual mod metadata, independently of the selected filename.
 new java.util.jar.JarFile(coreJar).withCloseable { archive ->
     def entry = archive.getJarEntry('META-INF/mods.toml')
     if (entry == null) throw new GradleException('The selected JAR has no Forge mod metadata.')
     if (archive.getJarEntry('dev/soulcatcherplus/api/client/SoulPreviews.class') == null)
-        throw new GradleException('Compat 1.2.3 needs the matching core 1.2.3 runtime JAR with the preview/range API; update soulcatcherplusJar.')
+        throw new GradleException('Compat needs a supported core runtime JAR with the preview/range API; update soulcatcherplusJar.')
     def metadata = archive.getInputStream(entry).withCloseable { it.getText('UTF-8') }
     def coreModVersion = null
     def modTables = metadata =~ /(?ms)^\s*\[\[mods\]\]\s*(.*?)(?=^\s*\[\[|\z)/
@@ -40,8 +43,8 @@ new java.util.jar.JarFile(coreJar).withCloseable { archive ->
         }
     }
     if (coreModVersion == '${file.jarVersion}') coreModVersion = archive.manifest?.mainAttributes?.getValue('Implementation-Version')
-    if (coreModVersion != core_version) {
-        throw new GradleException("Expected Soul Catcher Plus ${core_version} for Minecraft ${minecraft_version}; selected JAR declares ${coreModVersion ?: 'no soulcatcherplus mod'}.")
+    if (!compatibleCoreVersions.contains(coreModVersion)) {
+        throw new GradleException("Expected Soul Catcher Plus ${compatibleCoreVersions.join(" or ")} for Minecraft ${minecraft_version}; selected JAR declares ${coreModVersion ?: 'no soulcatcherplus mod'}.")
     }
 }
 
@@ -130,8 +133,8 @@ dependencies {
     }
 }
 tasks.named('processResources', ProcessResources).configure {
-    inputs.properties(mod_version: mod_version, core_version: core_version)
-    filesMatching('META-INF/mods.toml') { expand mod_version: mod_version, core_version: core_version }
+    inputs.properties(mod_version: mod_version, core_version_range: coreVersionRange)
+    filesMatching('META-INF/mods.toml') { expand mod_version: mod_version, core_version_range: coreVersionRange }
 }
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

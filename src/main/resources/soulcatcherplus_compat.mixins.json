@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "MowzieAreaTargetsMixin",
+    "AquamiraeMazeMotherTerrainMixin",
+    "MowzieIceBreathTerrainMixin",
     "IceAndFireDragonDestructionMixin",
     "IceAndFireSeaSerpentMixin",
     "IceAndFireDeathWormMixin",
@@ -12,6 +14,8 @@
     "TwilightLichSummonMixin",
     "TwilightLichMinionSearchMixin",
     "TwilightLichShadowsMixin",
+    "TwilightTerrainMixin",
+    "TwilightFallingIceLandingMixin",
     "TwilightUrGhastSummonMixin",
     "IceAndFireSirenMixin",
     "IceAndFireSirenCharmMixin"
