@@ -12,7 +12,7 @@ without an explicit user request. Do not rewrite history or existing release tag
 The core is an installable JAR dependency, never an adjacent source checkout.
 Configure `soulcatcherplusJar` in ignored `local.properties`, following
 `local.properties.example`, or pass `-PsoulcatcherplusJar=<path>`.
-The JAR must declare the expected `core_version`; use the matching Minecraft build.
+Use the matching Minecraft build of a core version accepted by the branch’s Gradle configuration.
 ForgeGradle deobfuscates it for compilation and the development runtime. Its content
 SHA identifies the dependency so replacing the same filename refreshes the remap cache.
 Changing core sources does not update this JAR automatically.

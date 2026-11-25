@@ -4,6 +4,18 @@
 
 No changes yet.
 
+## 1.3.0 — 2026-11-25
+
+Release for Minecraft 1.16.5/1.19.2/1.20.1/26.3, paired with core 1.3.0. Forge build targets remain 36.2.42/43.5.0/47.4.28/66.1.0 with Java 8/17/17/25; runtime minima are declared separately.
+
+- Extend terrain protection to supported owned Twilight Forest, Aquamirae, and Mowzie souls and their attacks. Preserve projectile provenance and filter block/explosion effects without globally disabling wild behavior or native entity-damage paths.
+- Cover version-specific Twilight direct block writes, transformations, plant growth, ice removal, and falling-ice creation/landing; prevent protected falling blocks from replacing or dropping terrain blocks.
+- Guard Aquamirae Maze Mother ice breaking and Mowzie ice-breath freezing using version-matched caster resolution. Add matching Sculptor trade-test protection on 1.19.2 and Elokosa leap-marker protection on 1.20.1.
+- Broaden explicit core acceptance to matching 1.3.0 stable or 1.3.0-prerelease, retain independent installable-core-JAR setup, and separate lowered Forge runtime minima from build targets. Compat 1.2.3 remains the pairing for core 1.2.3.
+- Retain existing IAF forms/terrain/Siren corrections, Twilight ownership, Mowzie ally filtering, and version-specific Aquamirae music hooks. No universal integration support or verified creature dependency is claimed for 26.3.
+
+All four fresh addon builds and eight addon runtime/sources archive audits passed, alongside the four core builds. All eight core/addon installed-production-client profiles completed startup and normal closure with exit 0 using final release bytes. The older three addon profiles used version-matched creature dependencies; 26.3 used core/addon only. No new dedicated-server, automated-test, GameTest, UI-automation, gameplay, or multiplayer verification ran. See [release notes](docs/releases/1.3.0.md) for exact profiles and known nonfatal external resource diagnostics.
+
 ## 1.2.3 — 2026-11-13
 
 Standalone addon builds require core 1.2.3 for Minecraft 1.16.5/1.19.2/1.20.1/26.3; Forge targets are 36.2.42/43.5.0/47.4.28/66.1.0 with Java 8/17/17/25.
