@@ -4,6 +4,17 @@
 
 No changes yet.
 
+## 1.3.0.1 — 2026-11-26
+
+Maintenance release for all four maintained Minecraft/Forge platforms.
+
+- Raise the 1.16.5 Forge minimum from 36.0.42 to 36.2.26, matching the core; keep the 36.2.42 build target and other ports' existing targets/minima.
+- Accept core 1.3.0.1 alongside 1.3.0 and 1.3.0-prerelease for the matching Minecraft version. Preserve existing integration behavior and standalone configured-core-JAR development.
+- Order the exact core-version alternatives for Forge's Maven range parser; verify all three intended same-Minecraft versions are accepted and a different Minecraft version is rejected.
+- Pair with the 1.20.1 core no-argument entrypoint correction; the loader fix belongs to the core rather than new addon gameplay.
+
+All eight fresh core/addon builds and 16 runtime/sources archive audits passed, including exact core-version range acceptance/rejection. A new 26-run matrix checked exact 1.3.0.1 release JAR bytes across 13 Minecraft/Forge combinations; every client passed startup and normal exit 0. A separate isolated OccultCraft copy on Forge 47.2.5 passed with both final JARs. No worlds, gameplay, multiplayer, dedicated-server checks, automated tests, GameTests, or UI automation were run. The earlier 1.3.0-versioned matrix is separate historical evidence. See [release notes](docs/releases/1.3.0.1.md).
+
 ## 1.3.0 — 2026-11-25
 
 Release for Minecraft 1.16.5/1.19.2/1.20.1/26.3, paired with core 1.3.0. Forge build targets remain 36.2.42/43.5.0/47.4.28/66.1.0 with Java 8/17/17/25; runtime minima are declared separately.
